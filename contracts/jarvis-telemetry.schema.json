@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Media Engine JARVIS Telemetry Event",
+  "type": "object",
+  "required": ["schema_version", "event_id", "project_id", "event_type", "occurred_at", "payload"],
+  "properties": {
+    "schema_version": {"type": "string", "const": "1.0"},
+    "event_id": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string", "const": "autonomous_media_engine"},
+    "event_type": {"type": "string", "enum": ["health", "publishing", "performance", "monetization", "exception", "human_review"]},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "content_items_produced": {"type": "integer", "minimum": 0},
+        "posts_published": {"type": "integer", "minimum": 0},
+        "publication_failures": {"type": "integer", "minimum": 0},
+        "reach": {"type": "number", "minimum": 0},
+        "engagement_rate": {"type": "number", "minimum": 0},
+        "monetization_eligible": {"type": "boolean"},
+        "revenue": {"type": "number", "minimum": 0},
+        "operating_cost": {"type": "number", "minimum": 0},
+        "net_revenue": {"type": "number"},
+        "exceptions": {"type": "integer", "minimum": 0},
+        "human_review_queue": {"type": "integer", "minimum": 0},
+        "last_successful_run": {"type": "string", "format": "date-time"}
+      }
+    }
+  },
+  "additionalProperties": false
+}
