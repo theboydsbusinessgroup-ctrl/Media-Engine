@@ -43,5 +43,6 @@ def build_manifest(
         },
         "generation_required": not generated_verified,
         "publish_ready": ready,
-        "truth_rule": "publish_ready_requires_a_provider_asset_that_passes_media_asset_qa",
+        "truth_rule": "asset_specification_is_not_a_generated_or_published_asset",
+        "provider_truth_rule": "publish_ready_requires_a_provider_asset_that_passes_media_asset_qa",
     }
