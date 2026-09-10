@@ -3,6 +3,15 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 
 @dataclass
+class Evidence:
+    url: str
+    title: str
+    excerpt: str = ""
+    published_at: str | None = None
+    authority_score: float = 0.5
+    freshness_score: float = 0.5
+
+@dataclass
 class Topic:
     topic_id: str
     title: str
@@ -12,6 +21,17 @@ class Topic:
     evergreen_score: float
     monetization_score: float
     risk_score: float = 0.0
+    evidence: list[Evidence] = field(default_factory=list)
+
+@dataclass
+class ContentBrief:
+    topic_id: str
+    angle: str
+    audience: str
+    promise: str
+    key_points: list[str]
+    evidence_urls: list[str]
+    cta: str
 
 @dataclass
 class ContentDraft:
@@ -22,6 +42,8 @@ class ContentDraft:
     destination_url: str | None = None
     claims: list[str] = field(default_factory=list)
     rights_sources: list[str] = field(default_factory=list)
+    evidence_urls: list[str] = field(default_factory=list)
+    generation_method: str = "template"
 
 @dataclass
 class QAResult:
