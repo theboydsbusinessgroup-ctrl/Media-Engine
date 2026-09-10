@@ -20,6 +20,19 @@ class MediaLoopTests(unittest.TestCase):
         self.assertTrue(result["publication"]["dry_run"])
         self.assertFalse(result["publication"]["published"])
 
+    def test_complete_cycle_emits_visual_manifest_without_claiming_asset_exists(self):
+        result = MediaLoop().run_once(self.candidates(), "https://example.com")
+        assets = result["assets"]
+        self.assertTrue(assets["asset_qa"]["approved"])
+        self.assertTrue(assets["generation_required"])
+        self.assertFalse(assets["publish_ready"])
+        self.assertEqual(assets["truth_rule"], "asset_specification_is_not_a_generated_or_published_asset")
+        shapes = {(v["platform"], v["aspect_ratio"]) for v in assets["visual"]["variants"]}
+        self.assertIn(("pinterest", "2:3"), shapes)
+        self.assertIn(("instagram", "9:16"), shapes)
+        self.assertIn(("tiktok", "9:16"), shapes)
+        self.assertIn(("youtube", "16:9"), shapes)
+
     def test_publish_is_idempotent(self):
         adapter = PinterestAdapter(dry_run=True)
         draft = ContentDraft("c1","t1","Useful business checklist","A sufficiently detailed and useful body for a practical business checklist.")
