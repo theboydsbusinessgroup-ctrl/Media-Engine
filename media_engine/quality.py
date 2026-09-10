@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from .models import ContentDraft, QAResult
 
 PROHIBITED_PHRASES = {"guaranteed income", "risk-free profit", "secret loophole", "100% guaranteed"}
+UNSUPPORTED_NUMERIC_PATTERNS = ("15 minute", "15-minute", "30 minute", "30-minute", "save hours", "double your", "increase by")
 
 
 def review(draft: ContentDraft) -> QAResult:
@@ -11,6 +12,7 @@ def review(draft: ContentDraft) -> QAResult:
     if len(draft.title.strip()) < 8: reasons.append("title_too_short")
     if len(draft.body.strip()) < 40: reasons.append("body_too_short")
     if any(p in text for p in PROHIBITED_PHRASES): reasons.append("prohibited_claim_language")
+    if any(p in text for p in UNSUPPORTED_NUMERIC_PATTERNS) and not draft.evidence_urls: reasons.append("unsupported_numeric_or_performance_claim")
     if draft.claims and not draft.evidence_urls: reasons.append("claims_lack_evidence")
     if draft.claims and any(not urlparse(u).scheme.startswith("http") for u in draft.evidence_urls): reasons.append("invalid_evidence_url")
     if len(draft.body) > 500: reasons.append("pinterest_body_too_long")
