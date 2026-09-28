@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import tempfile
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,6 +18,7 @@ from media_engine.providers.youtube_publisher import YouTubePublisher
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "inclusionai/ling-3.0-flash-vl:free"
+FALLBACK_MODEL = "anthropic/claude-haiku-4.5"
 VOICE = os.getenv("YOUTUBE_TTS_VOICE", "en-US-GuyNeural")
 
 TOPICS = [
@@ -37,42 +39,63 @@ def _openrouter_request(prompt: str) -> dict:
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY is required")
-    model = os.getenv("MEDIA_ENGINE_MODEL", DEFAULT_MODEL)
-    body = json.dumps({
-        "model": model,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    "You write original short-form educational scripts for Behind The Bar, "
-                    "a faceless bartending and hospitality channel. Be concise, accurate, useful, "
-                    "and conversational. Do not invent statistics, studies, endorsements, brand claims, "
-                    "or guarantees. Do not copy recognizable wording from other creators. Return JSON only."
-                ),
+
+    configured = os.getenv("MEDIA_ENGINE_MODEL", DEFAULT_MODEL).strip()
+    models = [m for m in (configured, FALLBACK_MODEL) if m]
+    models = list(dict.fromkeys(models))
+    last_error: Exception | None = None
+
+    for model in models:
+        body = json.dumps({
+            "model": model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You write original short-form educational scripts for Behind The Bar, "
+                        "a faceless bartending and hospitality channel. Be concise, accurate, useful, "
+                        "and conversational. Do not invent statistics, studies, endorsements, brand claims, "
+                        "or guarantees. Do not copy recognizable wording from other creators. Return JSON only."
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+            "max_tokens": 500,
+            "temperature": 0.55,
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            OPENROUTER_URL,
+            data=body,
+            method="POST",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://github.com/theboydsbusinessgroup-ctrl/Media-Engine",
+                "X-Title": "Behind The Bar Media Engine",
             },
-            {"role": "user", "content": prompt},
-        ],
-        "max_tokens": 500,
-        "temperature": 0.55,
-    }).encode("utf-8")
-    req = urllib.request.Request(
-        OPENROUTER_URL,
-        data=body,
-        method="POST",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://github.com/theboydsbusinessgroup-ctrl/Media-Engine",
-            "X-Title": "Behind The Bar Media Engine",
-        },
-    )
-    with urllib.request.urlopen(req, timeout=45) as resp:
-        payload = json.loads(resp.read().decode("utf-8"))
-    content = payload["choices"][0]["message"]["content"].strip()
-    start, end = content.find("{"), content.rfind("}")
-    if start < 0 or end < start:
-        raise RuntimeError("OpenRouter did not return a JSON object")
-    return json.loads(content[start:end + 1])
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=45) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            last_error = exc
+            if exc.code == 404 and model != models[-1]:
+                continue
+            try:
+                detail = exc.read().decode("utf-8", errors="replace")[:500]
+            except Exception:
+                detail = ""
+            raise RuntimeError(f"OpenRouter request failed for model {model} with HTTP {exc.code}: {detail}") from exc
+
+        content = payload["choices"][0]["message"]["content"].strip()
+        start, end = content.find("{"), content.rfind("}")
+        if start < 0 or end < start:
+            raise RuntimeError(f"OpenRouter model {model} did not return a JSON object")
+        result = json.loads(content[start:end + 1])
+        result["_model"] = model
+        return result
+
+    raise RuntimeError(f"No OpenRouter model succeeded: {last_error}")
 
 
 def generate_short_plan() -> dict:
@@ -103,7 +126,14 @@ Return JSON with exactly these keys: title, script, description, tags.
     word_count = len(script.split())
     if word_count < 40 or word_count > 100:
         raise RuntimeError(f"Generated script length is outside safe bounds: {word_count} words")
-    return {"title": title, "script": script, "description": description, "tags": tags, "topic": topic}
+    return {
+        "title": title,
+        "script": script,
+        "description": description,
+        "tags": tags,
+        "topic": topic,
+        "model": plan.get("_model", "unknown"),
+    }
 
 
 def render_short(plan: dict, out_dir: Path) -> Path:
@@ -172,6 +202,7 @@ def main() -> None:
             "topic": plan["topic"],
             "title": plan["title"],
             "word_count": len(plan["script"].split()),
+            "model": plan["model"],
             "video_id": result.video_id,
             "url": result.url,
         }, ensure_ascii=False))
