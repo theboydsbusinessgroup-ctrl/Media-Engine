@@ -1,0 +1,75 @@
+name: YouTube Autonomous Short Publisher
+
+on:
+  push:
+    branches:
+      - youtube-autonomous-shorts
+  schedule:
+    - cron: '17 14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-render-upload-public:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      YOUTUBE_PRIVACY_STATUS: public
+      MEDIA_ENGINE_MODEL: openrouter/free
+      YOUTUBE_KOKORO_VOICE: am_michael
+      YOUTUBE_KOKORO_SPEED: '1.04'
+      KOKORO_MODEL_PATH: ${{ github.workspace }}/.cache/kokoro/kokoro-v1.0.int8.onnx
+      KOKORO_VOICES_PATH: ${{ github.workspace }}/.cache/kokoro/voices-v1.0.bin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify required credentials exist
+        run: |
+          test -n "$OPENROUTER_API_KEY" || { echo "OPENROUTER_API_KEY is missing"; exit 1; }
+          test -n "$PEXELS_API_KEY" || { echo "PEXELS_API_KEY is missing"; exit 1; }
+          test -n "$YOUTUBE_CLIENT_ID" || { echo "YOUTUBE_CLIENT_ID is missing"; exit 1; }
+          test -n "$YOUTUBE_CLIENT_SECRET" || { echo "YOUTUBE_CLIENT_SECRET is missing"; exit 1; }
+          test -n "$YOUTUBE_REFRESH_TOKEN" || { echo "YOUTUBE_REFRESH_TOKEN is missing"; exit 1; }
+
+      - name: Install free media dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --quiet 'kokoro-onnx>=0.5,<1' 'soundfile>=0.12,<1'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core espeak-ng
+
+      - name: Cache Kokoro model files
+        uses: actions/cache@v4
+        with:
+          path: .cache/kokoro
+          key: kokoro-v1.0-int8-voices-v1
+
+      - name: Download Kokoro model files when missing
+        run: |
+          mkdir -p .cache/kokoro
+          if [ ! -s "$KOKORO_MODEL_PATH" ]; then
+            curl -L --fail --retry 3 --retry-delay 2 \
+              https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.int8.onnx \
+              -o "$KOKORO_MODEL_PATH"
+          fi
+          if [ ! -s "$KOKORO_VOICES_PATH" ]; then
+            curl -L --fail --retry 3 --retry-delay 2 \
+              https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin \
+              -o "$KOKORO_VOICES_PATH"
+          fi
+
+      - name: Generate, render, and upload a public Behind The Bar Short
+        run: |
+          python scripts/youtube_autonomous_short.py | tee /tmp/youtube-autonomous-short-result.json
+          python -m json.tool /tmp/youtube-autonomous-short-result.json
