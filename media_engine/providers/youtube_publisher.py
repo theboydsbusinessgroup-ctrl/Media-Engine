@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, os, urllib.parse, urllib.request
+import json, os, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -19,11 +19,23 @@ class YouTubePublisher:
         if not all((self.client_id,self.client_secret,self.refresh_token)):
             raise RuntimeError("YouTube OAuth is not configured: YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, and YOUTUBE_REFRESH_TOKEN are required")
 
+    @staticmethod
+    def _api_error(exc: urllib.error.HTTPError, context: str) -> RuntimeError:
+        try:
+            body = exc.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = ""
+        detail = body.strip() or exc.reason or "unknown error"
+        return RuntimeError(f"{context} failed with HTTP {exc.code}: {detail}")
+
     def _access_token(self):
         body=urllib.parse.urlencode({"client_id":self.client_id,"client_secret":self.client_secret,"refresh_token":self.refresh_token,"grant_type":"refresh_token"}).encode()
         req=urllib.request.Request(TOKEN_URL,data=body,headers={"Content-Type":"application/x-www-form-urlencoded"})
-        with urllib.request.urlopen(req,timeout=30) as r:
-            payload=json.load(r)
+        try:
+            with urllib.request.urlopen(req,timeout=30) as r:
+                payload=json.load(r)
+        except urllib.error.HTTPError as exc:
+            raise self._api_error(exc, "Google token refresh") from exc
         token=payload.get("access_token")
         if not token: raise RuntimeError("Google token refresh returned no access_token")
         return token
@@ -35,12 +47,19 @@ class YouTubePublisher:
         metadata={"snippet":{"title":title,"description":description,"tags":tags or [],"categoryId":"22"},"status":{"privacyStatus":privacy_status,"selfDeclaredMadeForKids":False}}
         if publish_at: metadata["status"]["publishAt"]=publish_at
         req=urllib.request.Request(UPLOAD_URL,data=json.dumps(metadata).encode(),method="POST",headers={"Authorization":f"Bearer {token}","Content-Type":"application/json; charset=UTF-8","X-Upload-Content-Type":"video/mp4"})
-        with urllib.request.urlopen(req,timeout=30) as r:
-            upload_url=r.headers.get("Location")
+        try:
+            with urllib.request.urlopen(req,timeout=30) as r:
+                upload_url=r.headers.get("Location")
+        except urllib.error.HTTPError as exc:
+            raise self._api_error(exc, "YouTube upload initialization") from exc
         if not upload_url: raise RuntimeError("YouTube did not return a resumable upload URL")
         with open(video_path,"rb") as f: data=f.read()
         req=urllib.request.Request(upload_url,data=data,method="PUT",headers={"Authorization":f"Bearer {token}","Content-Type":"video/mp4","Content-Length":str(len(data))})
-        with urllib.request.urlopen(req,timeout=300) as r: payload=json.load(r)
+        try:
+            with urllib.request.urlopen(req,timeout=300) as r:
+                payload=json.load(r)
+        except urllib.error.HTTPError as exc:
+            raise self._api_error(exc, "YouTube video upload") from exc
         video_id=payload.get("id")
         if not video_id: raise RuntimeError("YouTube upload completed without a video id")
         return YouTubeUploadResult(video_id, f"https://www.youtube.com/watch?v={video_id}")
