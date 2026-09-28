@@ -1,0 +1,50 @@
+name: YouTube Autonomous Short Smoke
+
+on:
+  push:
+    branches:
+      - youtube-autonomous-shorts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate-render-upload-private:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+      YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+      YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+      YOUTUBE_PRIVACY_STATUS: private
+      MEDIA_ENGINE_MODEL: inclusionai/ling-3.0-flash-vl:free
+      YOUTUBE_TTS_VOICE: en-US-GuyNeural
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify required credentials exist
+        run: |
+          test -n "$OPENROUTER_API_KEY" || { echo "OPENROUTER_API_KEY is missing"; exit 1; }
+          test -n "$YOUTUBE_CLIENT_ID" || { echo "YOUTUBE_CLIENT_ID is missing"; exit 1; }
+          test -n "$YOUTUBE_CLIENT_SECRET" || { echo "YOUTUBE_CLIENT_SECRET is missing"; exit 1; }
+          test -n "$YOUTUBE_REFRESH_TOKEN" || { echo "YOUTUBE_REFRESH_TOKEN is missing"; exit 1; }
+
+      - name: Install free media dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --quiet 'edge-tts>=7,<8'
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg fonts-dejavu-core
+          fi
+
+      - name: Generate, render, and upload a private Behind The Bar Short
+        run: |
+          python scripts/youtube_autonomous_short.py | tee /tmp/youtube-autonomous-short-result.json
+          python -m json.tool /tmp/youtube-autonomous-short-result.json
