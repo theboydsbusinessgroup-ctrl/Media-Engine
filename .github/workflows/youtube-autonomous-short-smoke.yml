@@ -1,16 +1,18 @@
-name: YouTube Autonomous Short Smoke
+name: YouTube Autonomous Short Publisher
 
 on:
   push:
     branches:
       - youtube-autonomous-shorts
+  schedule:
+    - cron: '17 14 * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  generate-render-upload-private:
+  generate-render-upload-public:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -19,7 +21,7 @@ jobs:
       YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
       YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
       YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-      YOUTUBE_PRIVACY_STATUS: private
+      YOUTUBE_PRIVACY_STATUS: public
       MEDIA_ENGINE_MODEL: openrouter/free
       YOUTUBE_KOKORO_VOICE: am_michael
       YOUTUBE_KOKORO_SPEED: '1.04'
@@ -67,7 +69,7 @@ jobs:
               -o "$KOKORO_VOICES_PATH"
           fi
 
-      - name: Generate, render, and upload a private Behind The Bar Short
+      - name: Generate, render, and upload a public Behind The Bar Short
         run: |
           python scripts/youtube_autonomous_short.py | tee /tmp/youtube-autonomous-short-result.json
           python -m json.tool /tmp/youtube-autonomous-short-result.json
