@@ -101,7 +101,16 @@ def _openrouter_request(prompt: str) -> dict[str, Any]:
                 detail = ""
             raise RuntimeError(f"OpenRouter request failed for model {model} with HTTP {exc.code}: {detail}") from exc
 
-        content = payload["choices"][0]["message"]["content"].strip()
+        choice = (payload.get("choices") or [{}])[0]
+        message = choice.get("message") or {}
+        raw_content = message.get("content")
+        if not isinstance(raw_content, str) or not raw_content.strip():
+            last_error = RuntimeError(f"OpenRouter model {model} returned empty content")
+            if model != models[-1]:
+                continue
+            raise last_error
+
+        content = raw_content.strip()
         start, end = content.find("{"), content.rfind("}")
         if start < 0 or end < start:
             last_error = RuntimeError(f"OpenRouter model {model} did not return JSON")
