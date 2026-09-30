@@ -1,0 +1,195 @@
+{
+  "title": "THE MIDNIGHT ARCHIVE: The Watch That Counts Backward",
+  "runtime_target_minutes": 13,
+  "draft": "claude-writers-room-v1",
+  "cold_open": {
+    "location": "INT. INTAKE ARCHIVE - NIGHT",
+    "time": "2:47 AM",
+    "hook": "Mara finds an unlogged lost-property package dated tomorrow and addressed to herself.",
+    "dialogue": [
+      {"character": "MARA", "line": "That's not possible."}
+    ]
+  },
+  "scenes": [
+    {
+      "scene_number": 1,
+      "location": "INT. INTAKE ARCHIVE",
+      "time": "2:48 AM",
+      "purpose": "Reveal the backward-counting watch and establish Mara's methodical nature.",
+      "visual": "Cool fluorescent archive room, evidence-style package, brass pocket watch reflected in Mara's face.",
+      "beats": [
+        "Mara documents the impossible package.",
+        "No intake record exists.",
+        "She opens the sealed package.",
+        "A brass pocket watch counts backward from forty-seven minutes."
+      ],
+      "dialogue": [
+        {"character": "MARA", "line": "Item recovered: one pocket watch. Recovery date: tomorrow."},
+        {"character": "MARA", "line": "No intake log. No courier signature. No authorization code."},
+        {"character": "MARA", "line": "Forty-seven minutes. Counting down to what?"}
+      ]
+    },
+    {
+      "scene_number": 2,
+      "location": "INT. SECURITY BOOTH",
+      "time": "2:53 AM",
+      "purpose": "Introduce Elias and deliver reversal one: the package entered through a sealed loading dock.",
+      "visual": "Small monitor-filled security booth, Elias with coffee, Mara sets the watch beneath cold screen light.",
+      "beats": [
+        "Elias assumes a day-shift prank.",
+        "Security logs trace the bin to Loading Dock 3.",
+        "Dock 3 has been sealed behind concrete for eleven years."
+      ],
+      "dialogue": [
+        {"character": "ELIAS", "line": "Let me guess. You found something weird."},
+        {"character": "MARA", "line": "Dated tomorrow. Addressed to me. No intake record."},
+        {"character": "ELIAS", "line": "Someone's messing with you."},
+        {"character": "MARA", "line": "Can you check where it came in?"},
+        {"character": "ELIAS", "line": "According to the weight sensor log, this bin arrived through Loading Dock 3."},
+        {"character": "MARA", "line": "And?"},
+        {"character": "ELIAS", "line": "Dock 3 has been sealed since 2015. Concrete wall. No access."},
+        {"character": "MARA", "line": "Check it again."},
+        {"character": "ELIAS", "line": "Same result. Mara, this thing came through a wall."}
+      ]
+    },
+    {
+      "scene_number": 3,
+      "location": "INT. CITY SYSTEMS WORKSPACE",
+      "time": "3:02 AM",
+      "purpose": "Introduce Nia and deliver reversal two: the package ID already exists in a 1989 record.",
+      "visual": "Nia in a blue monitor-lit operations room, split-screen video call with Mara, legacy database record glowing onscreen.",
+      "beats": [
+        "Mara calls Nia for unofficial database help.",
+        "Nia finds the current pending record.",
+        "The same unique package ID exists in a 1989 legacy record.",
+        "The old item field is redacted and the disposition reads RETURNED TO ORIGIN."
+      ],
+      "dialogue": [
+        {"character": "NIA", "line": "You're calling at three in the morning, so either you're in trouble or you found something impossible. I'm hoping for impossible."},
+        {"character": "MARA", "line": "Package ID November-17-2847."},
+        {"character": "NIA", "line": "Got it. Status pending intake. Logged tonight."},
+        {"character": "MARA", "line": "The recovery date is tomorrow. And it's addressed to me."},
+        {"character": "NIA", "line": "Wait. Mara, this package ID already exists in the system."},
+        {"character": "MARA", "line": "There's no prior record."},
+        {"character": "NIA", "line": "Not in the active database. Same ID. Legacy archive. 1989."},
+        {"character": "MARA", "line": "Can you see what was in it?"},
+        {"character": "NIA", "line": "Redacted. But the disposition says returned to origin."},
+        {"character": "MARA", "line": "What does that mean?"},
+        {"character": "NIA", "line": "They sent it back where it came from. Which makes no sense for a lost item."}
+      ]
+    },
+    {
+      "scene_number": 4,
+      "location": "INT. INTAKE ARCHIVE",
+      "time": "3:14 AM",
+      "purpose": "Reveal the watch engraving and connect the countdown to the freight elevator.",
+      "visual": "Watch opened beneath a magnifying lamp, tiny engraving visible inside the brass case.",
+      "beats": [
+        "Mara opens the watch case.",
+        "The engraving reads FREIGHT / 03:47 / SEVEN / VALE.",
+        "3:47 matches the end of the countdown."
+      ],
+      "dialogue": [
+        {"character": "MARA", "line": "Freight. Three forty-seven. Seven. Vale. My name is inside this watch."}
+      ]
+    },
+    {
+      "scene_number": 5,
+      "location": "INT. SECURITY BOOTH",
+      "time": "3:22 AM",
+      "purpose": "Deliver reversal three: the freight elevator descends beyond the building's documented lowest floor.",
+      "visual": "Security monitors flicker as a freight elevator floor indicator drops past 3 toward 7.",
+      "beats": [
+        "Mara shows Elias the engraving.",
+        "A power fluctuation hits the building.",
+        "The freight elevator activates without authorization.",
+        "It descends past Sublevel 3 to Sublevel 7."
+      ],
+      "dialogue": [
+        {"character": "MARA", "line": "The watch is telling me to be at the freight elevator at three forty-seven."},
+        {"character": "ELIAS", "line": "Or someone wants you to think that."},
+        {"character": "MARA", "line": "Who? And how did they get a package through a sealed loading dock?"},
+        {"character": "ELIAS", "line": "The freight elevator just activated. No authorization code."},
+        {"character": "MARA", "line": "Where's it going?"},
+        {"character": "ELIAS", "line": "Down. One. Two. Three..."},
+        {"character": "MARA", "line": "There is no Sublevel 4."},
+        {"character": "ELIAS", "line": "Elevator doesn't know that. It's still going."},
+        {"character": "MARA", "line": "How far?"},
+        {"character": "ELIAS", "line": "Sublevel 7. Then it stopped."}
+      ]
+    },
+    {
+      "scene_number": 6,
+      "location": "INT. SUBLEVEL 3 CORRIDOR / FREIGHT ELEVATOR",
+      "time": "3:41 AM",
+      "purpose": "Put Mara and Elias at the point of no return as the countdown enters its final minutes.",
+      "visual": "Concrete service corridor, old freight doors, audible backward ticking, floor indicator fixed on 7.",
+      "beats": [
+        "Mara and Elias approach the freight elevator.",
+        "The call button does nothing.",
+        "The watch enters its final six minutes.",
+        "Mara refuses to walk away."
+      ],
+      "dialogue": [
+        {"character": "ELIAS", "line": "This is a bad idea."},
+        {"character": "MARA", "line": "Noted."},
+        {"character": "ELIAS", "line": "We don't know what's down there."},
+        {"character": "MARA", "line": "Someone sent me a watch from tomorrow telling me to be here at three forty-seven. I need to know why."},
+        {"character": "ELIAS", "line": "And if it's a trap?"},
+        {"character": "MARA", "line": "Then I'm already in it."}
+      ]
+    },
+    {
+      "scene_number": 7,
+      "location": "INT. FREIGHT ELEVATOR / SUBLEVEL 7 CORRIDOR",
+      "time": "3:47 AM",
+      "purpose": "Pay off the countdown and end on the serialized cliffhanger.",
+      "visual": "At zero, elevator doors reveal an impossible emergency-lit corridor marked SUBLEVEL 7; one archive box sits alone in the darkness.",
+      "beats": [
+        "The watch reaches zero and stops.",
+        "The elevator rises to Mara and Elias.",
+        "Its doors open directly onto an impossible Sublevel 7 corridor.",
+        "A lone archive box is labeled MARA VALE — DATE LOST: TONIGHT.",
+        "The doors begin closing.",
+        "Mara jams the pocket watch into the track and holds them open.",
+        "She chooses to learn what the Archive knows about her future."
+      ],
+      "dialogue": [
+        {"character": "MARA", "line": "Five seconds."},
+        {"character": "ELIAS", "line": "Mara—"},
+        {"character": "MARA", "line": "It's here."},
+        {"character": "ELIAS", "line": "That's not an elevator."},
+        {"character": "MARA", "line": "Sublevel 7. It's real."},
+        {"character": "MARA", "line": "Date lost: tonight. That box is about me."},
+        {"character": "ELIAS", "line": "The doors—"},
+        {"character": "MARA", "line": "Not yet."},
+        {"character": "ELIAS", "line": "What are you doing?"},
+        {"character": "MARA", "line": "Finding out what the Archive knows about my future."}
+      ]
+    }
+  ],
+  "continuity_added": [
+    "The freight elevator can access Sublevel 7 although public plans end at Sublevel 3.",
+    "The package ID exists in both the current database and a 1989 legacy record.",
+    "The 1989 record says returned to origin and has a redacted item field.",
+    "The watch engraving predicts the time and elevator destination.",
+    "A box on Sublevel 7 identifies Mara as lost tonight."
+  ],
+  "threads_opened": [
+    "What is Sublevel 7?",
+    "What is inside Mara's box?",
+    "Who delivered the watch through a sealed loading dock?",
+    "Why does the package ID exist in 1989?",
+    "Is the Archive predicting events or causing them?"
+  ],
+  "thumbnail_concepts": [
+    "Mara holding the impossible package with tomorrow's date clearly visible.",
+    "Brass pocket watch counting backward reflected in Mara's face.",
+    "Dark Sublevel 7 corridor with a lone box labeled MARA VALE."
+  ],
+  "title_options": [
+    "The Watch That Counts Backward | The Midnight Archive Ep. 1",
+    "Forty-Seven Minutes | The Midnight Archive",
+    "Sublevel Seven | The Midnight Archive Pilot"
+  ]
+}
