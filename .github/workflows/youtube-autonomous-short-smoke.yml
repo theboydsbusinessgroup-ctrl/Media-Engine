@@ -25,6 +25,7 @@ jobs:
       MEDIA_ENGINE_MODEL: openrouter/free
       YOUTUBE_KOKORO_VOICE: am_michael
       YOUTUBE_KOKORO_SPEED: '1.04'
+      YOUTUBE_PLAN_MAX_ATTEMPTS: '5'
       KOKORO_MODEL_PATH: ${{ github.workspace }}/.cache/kokoro/kokoro-v1.0.int8.onnx
       KOKORO_VOICES_PATH: ${{ github.workspace }}/.cache/kokoro/voices-v1.0.bin
 
@@ -71,5 +72,5 @@ jobs:
 
       - name: Generate, render, and upload a public Behind The Bar Short
         run: |
-          python scripts/youtube_autonomous_short.py | tee /tmp/youtube-autonomous-short-result.json
+          python scripts/youtube_autonomous_short_resilient.py | tee /tmp/youtube-autonomous-short-result.json
           python -m json.tool /tmp/youtube-autonomous-short-result.json
