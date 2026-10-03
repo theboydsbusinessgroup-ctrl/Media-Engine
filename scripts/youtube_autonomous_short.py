@@ -18,10 +18,11 @@ import sys
 sys.path.insert(0, str(ROOT))
 
 from media_engine.providers.youtube_publisher import YouTubePublisher
+from media_engine.monetization import attach_offer, publication_receipt
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "openrouter/free"
-FALLBACK_MODEL = "anthropic/claude-haiku-4.5"
+FALLBACK_MODEL = ""
 PEXELS_SEARCH_URL = "https://api.pexels.com/videos/search"
 KOKORO_VOICE = os.getenv("YOUTUBE_KOKORO_VOICE", "am_michael")
 KOKORO_SPEED = float(os.getenv("YOUTUBE_KOKORO_SPEED", "1.04"))
@@ -55,6 +56,8 @@ def _openrouter_request(prompt: str) -> dict[str, Any]:
         raise RuntimeError("OPENROUTER_API_KEY is required")
 
     configured = os.getenv("MEDIA_ENGINE_MODEL", DEFAULT_MODEL).strip()
+    if configured != 'openrouter/free' and not configured.endswith(':free'):
+        raise RuntimeError('Autonomous publisher requires a free model; paid fallback is disabled')
     models = list(dict.fromkeys(m for m in (configured, FALLBACK_MODEL) if m))
     last_error: Exception | None = None
 
@@ -441,7 +444,7 @@ def render_short(plan: dict[str, Any], out_dir: Path) -> tuple[Path, list[dict[s
 
 
 def main() -> None:
-    plan = generate_short_plan()
+    plan = attach_offer(generate_short_plan(), 'behindthebar-' + datetime.now(timezone.utc).date().isoformat())
     privacy = os.getenv("YOUTUBE_PRIVACY_STATUS", "private").strip().lower()
     if privacy not in {"private", "unlisted", "public"}:
         raise RuntimeError("YOUTUBE_PRIVACY_STATUS must be private, unlisted, or public")
@@ -459,6 +462,12 @@ def main() -> None:
             tags=plan["tags"],
             privacy_status=privacy,
         )
+        receipt = publication_receipt(plan, result.video_id, privacy)
+        receipt_path = os.getenv('MEDIA_RECEIPT_PATH')
+        if receipt_path:
+            target = Path(receipt_path)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps(receipt, indent=2) + '\n')
         print(json.dumps({
             "status": "ok",
             "channel": "Behind The Bar",

@@ -12,7 +12,7 @@ _ORIGINAL_GENERATE_SHORT_PLAN = engine.generate_short_plan
 
 def generate_short_plan_with_retries() -> dict:
     """Regenerate recoverable AI output instead of aborting the publishing run."""
-    max_attempts = max(1, int(os.getenv("YOUTUBE_PLAN_MAX_ATTEMPTS", "5")))
+    max_attempts = min(3, max(1, int(os.getenv("YOUTUBE_PLAN_MAX_ATTEMPTS", "3"))))
     last_error: RuntimeError | None = None
 
     for attempt in range(1, max_attempts + 1):
