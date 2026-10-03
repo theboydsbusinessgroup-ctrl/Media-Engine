@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: behindthebar-publication
+  cancel-in-progress: false
+
 jobs:
   generate-render-upload-public:
     runs-on: ubuntu-24.04
@@ -25,7 +29,8 @@ jobs:
       MEDIA_ENGINE_MODEL: openrouter/free
       YOUTUBE_KOKORO_VOICE: am_michael
       YOUTUBE_KOKORO_SPEED: '1.04'
-      YOUTUBE_PLAN_MAX_ATTEMPTS: '5'
+      YOUTUBE_PLAN_MAX_ATTEMPTS: '3'
+      MEDIA_RECEIPT_PATH: receipts/publication.json
       KOKORO_MODEL_PATH: ${{ github.workspace }}/.cache/kokoro/kokoro-v1.0.int8.onnx
       KOKORO_VOICES_PATH: ${{ github.workspace }}/.cache/kokoro/voices-v1.0.bin
 
@@ -74,3 +79,12 @@ jobs:
         run: |
           python scripts/youtube_autonomous_short_resilient.py | tee /tmp/youtube-autonomous-short-result.json
           python -m json.tool /tmp/youtube-autonomous-short-result.json
+
+      - name: Preserve publication receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publication-receipt-${{ github.run_id }}
+          path: receipts/publication.json
+          retention-days: 90
+          if-no-files-found: ignore
