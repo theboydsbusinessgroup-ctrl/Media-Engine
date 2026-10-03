@@ -103,6 +103,8 @@ def _openrouter_request(prompt: str) -> dict[str, Any]:
             except Exception:
                 detail = ""
             raise RuntimeError(f"OpenRouter request failed for model {model} with HTTP {exc.code}: {detail}") from exc
+        except (urllib.error.URLError, TimeoutError) as exc:
+            raise RuntimeError('OpenRouter network unavailable') from exc
 
         choice = (payload.get("choices") or [{}])[0]
         message = choice.get("message") or {}
@@ -120,7 +122,12 @@ def _openrouter_request(prompt: str) -> dict[str, Any]:
             if model != models[-1]:
                 continue
             raise last_error
-        result = json.loads(content[start:end + 1])
+        try:
+            result = json.loads(content[start:end + 1])
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f'OpenRouter model {model} did not return JSON') from exc
+        if not isinstance(result,dict):
+            raise RuntimeError(f'OpenRouter model {model} did not return JSON')
         result["_model"] = model
         return result
 

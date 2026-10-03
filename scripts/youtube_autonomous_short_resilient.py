@@ -5,6 +5,7 @@ import os
 import sys
 
 import youtube_autonomous_short as engine
+from media_engine.evergreen import evergreen_plan
 
 
 _ORIGINAL_GENERATE_SHORT_PLAN = engine.generate_short_plan
@@ -29,6 +30,9 @@ def generate_short_plan_with_retries() -> dict:
             recoverable = (
                 message.startswith("Generated script length is outside safe bounds:")
                 or message == "Generated YouTube plan is missing title or script"
+                or ('OpenRouter model' in message and ('empty content' in message or 'did not return JSON' in message))
+                or ('OpenRouter request failed' in message and any('HTTP '+str(status) in message for status in (429,500,502,503,504)))
+                or message == 'OpenRouter network unavailable'
             )
             if not recoverable:
                 raise
@@ -43,9 +47,8 @@ def generate_short_plan_with_retries() -> dict:
                 file=sys.stderr,
             )
 
-    raise RuntimeError(
-        f"Short plan generation failed after {max_attempts} attempts: {last_error}"
-    ) from last_error
+    print('[media-engine] Free generation unavailable; using an unused editorial lesson.',file=sys.stderr)
+    return evergreen_plan(engine.ROOT)
 
 
 engine.generate_short_plan = generate_short_plan_with_retries
