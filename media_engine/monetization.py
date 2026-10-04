@@ -5,18 +5,19 @@ from urllib.parse import urlencode
 PRODUCT_URL = 'https://boydsbusiness.gumroad.com/l/yknubt'
 SESSION_CODE = 'BARBUYER'
 SESSION_REQUEST_EMAIL = 'theboydsbusinessgroup@gmail.com'
-SPOKEN_CTA = 'Get my nine-dollar guide, then request a twenty-minute session for nineteen dollars with Bar Buyer. Propose a time; I approve every booking. Details in my channel description.'
+SPOKEN_CTA = 'Get my nine-dollar guide, then request a twenty-minute session for nineteen dollars with Bar Buyer. I approve the time; pay before booking confirmation. Details in my channel description.'
 MAX_SPOKEN_WORDS = 120
 
 
 def buyer_session_message() -> str:
     return (
         'Ebook buyer offer: request a 20-minute virtual home-bar session for $19 with code ' + SESSION_CODE + '.\n'
-        'Bring your bottle list and recipe questions. Email ' + SESSION_REQUEST_EMAIL + ' with subject ' + SESSION_CODE +
-        ' and your ebook order ID, purchase email, timezone, and preferred times. Keep receipts private.\n'
-        'One session per verified qualifying purchase; paid separately from the ebook. '
-        'Propose any future date and time with your timezone. Eric must approve the exact date and time before payment or booking; '
-        'a request does not reserve a slot. Purchase verification is required. Drinking is not required.'
+        'Email ' + SESSION_REQUEST_EMAIL + ' with subject ' + SESSION_CODE +
+        ', ebook order ID, purchase email, timezone and proposed date/time. Keep receipts private.\n'
+        'Propose any future time. Eric approves the exact slot first; full $19 payment must be verified before booking confirmation or a meeting invitation. '
+        'A request does not reserve a slot.\n'
+        'One session per verified purchase, paid separately from the ebook. '
+        'If Eric cannot provide your session, choose an approved replacement time or a full $19 refund. Drinking is not required.'
     )
 
 
