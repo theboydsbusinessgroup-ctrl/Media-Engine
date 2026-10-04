@@ -373,7 +373,7 @@ ScaledBorderAndShadow: yes
 Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
 Style: Caption,DejaVu Sans,92,&H00FFFFFF,&H0000D7FF,&H00000000,&H96000000,-1,0,0,0,100,100,0,0,3,5,0,2,70,70,245,1
 Style: Hook,DejaVu Sans,74,&H00FFFFFF,&H0000D7FF,&H00000000,&H90000000,-1,0,0,0,100,100,1,0,3,4,0,8,85,85,165,1
-Style: Offer,DejaVu Sans,52,&H00FFFFFF,&H0000D7FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,3,4,0,8,85,85,180,1
+Style: Offer,DejaVu Sans,48,&H00FFFFFF,&H0000D7FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,3,4,0,8,85,85,180,1
 Style: Brand,DejaVu Sans,36,&H00FFFFFF,&H0000D7FF,&H00000000,&H70000000,-1,0,0,0,100,100,1,0,3,2,0,8,90,90,70,1
 
 [Events]
