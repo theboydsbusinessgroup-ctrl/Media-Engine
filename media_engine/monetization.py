@@ -3,8 +3,20 @@ from datetime import datetime, timezone
 from urllib.parse import urlencode
 
 PRODUCT_URL = 'https://boydsbusiness.gumroad.com/l/yknubt'
-SPOKEN_CTA = 'Choose your next bottle with a plan. Get fifteen recipes, exact pours, and a six-bottle guide for nine dollars. Ebook link in my channel description.'
+SESSION_CODE = 'BARBUYER'
+SESSION_REQUEST_EMAIL = 'theboydsbusinessgroup@gmail.com'
+SPOKEN_CTA = 'Get my nine-dollar guide, then request a twenty-minute virtual session for nineteen dollars with code Bar Buyer. Email your receipt privately; details are in my channel description.'
 MAX_SPOKEN_WORDS = 120
+
+
+def buyer_session_message() -> str:
+    return (
+        'Ebook buyer offer: request a 20-minute virtual home-bar session for $19 with code ' + SESSION_CODE + '.\n'
+        'Bring your bottle list and recipe questions. Email ' + SESSION_REQUEST_EMAIL + ' with subject ' + SESSION_CODE +
+        ' and your ebook order ID, purchase email, timezone, and preferred times. Keep receipts private.\n'
+        'One session per verified qualifying purchase; paid separately from the ebook. '
+        'Purchase eligibility and a time are confirmed before payment. Availability by arrangement; drinking is not required.'
+    )
 
 
 def offer_message(url: str) -> str:
@@ -15,7 +27,7 @@ def offer_message(url: str) -> str:
         'Free recipes are available. This guide puts the shopping plan and the drinks in one reference.\n'
         'Get the 51-page PDF for $9: ' + url + '\n'
         'Digital guide; bottles and ingredients are not included. '
-        'For adults of legal drinking age. Drink responsibly.'
+        'For adults of legal drinking age. Drink responsibly.\n\n' + buyer_session_message()
     )
 
 
