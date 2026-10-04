@@ -3,7 +3,20 @@ from datetime import datetime, timezone
 from urllib.parse import urlencode
 
 PRODUCT_URL = 'https://boydsbusiness.gumroad.com/l/yknubt'
-SPOKEN_CTA = 'Want a six-bottle plan for fifteen cocktails? My nine-dollar PDF guide is in the channel description.'
+SPOKEN_CTA = 'Choose your next bottle with a plan. Get fifteen recipes, exact pours, and a six-bottle guide for nine dollars. Ebook link in my channel description.'
+MAX_SPOKEN_WORDS = 120
+
+
+def offer_message(url: str) -> str:
+    return (
+        'Before you buy another bottle, choose what you want to make.\n'
+        'One Bottle at a Time connects a six-bottle home-bar plan with 15 cocktail recipes, '
+        'exact measurements, clear methods, pro tips, and a Bar Build Map.\n'
+        'Free recipes are available. This guide puts the shopping plan and the drinks in one reference.\n'
+        'Get the 51-page PDF for $9: ' + url + '\n'
+        'Digital guide; bottles and ingredients are not included. '
+        'For adults of legal drinking age. Drink responsibly.'
+    )
 
 
 def campaign_url(campaign: str, content: str = '') -> str:
@@ -17,7 +30,9 @@ def attach_offer(plan: dict, campaign: str, content: str = 'channel') -> dict:
     result = dict(plan)
     result['offer_url'] = campaign_url(campaign, content)
     result['script'] = result['script'].rstrip() + ' ' + SPOKEN_CTA
-    result['description'] = result['description'].rstrip() + '\n\nOne Bottle at a Time: 15 cocktails, six bottles. $9 PDF ebook.\n' + result['offer_url']
+    if len(result['script'].split()) > MAX_SPOKEN_WORDS:
+        raise RuntimeError('Final script exceeds spoken-word budget including the offer')
+    result['description'] = offer_message(result['offer_url']) + '\n\n' + result['description'].rstrip()
     result['campaign'] = campaign
     return result
 

@@ -28,16 +28,16 @@ KOKORO_VOICE = os.getenv("YOUTUBE_KOKORO_VOICE", "am_michael")
 KOKORO_SPEED = float(os.getenv("YOUTUBE_KOKORO_SPEED", "1.04"))
 
 TOPICS = [
-    "why dilution is part of a well-made cocktail",
-    "when bartenders shake a cocktail versus stir it",
-    "how ice changes a cocktail beyond simply making it cold",
-    "why mise en place matters behind a busy bar",
-    "how bartenders balance strong sweet sour and bitter flavors",
-    "why chilling the glass can change the drinking experience",
-    "how a bartender can recommend a drink without overwhelming the guest",
-    "what makes a highball different from a sour",
-    "why fresh citrus changes cocktail balance",
-    "how professional bartenders stay organized during a rush",
+    "choosing the next home-bar bottle by the cocktails you want to make",
+    "turning disconnected saved cocktail recipes into a shared ingredient plan",
+    "using exact measured pours to repeat a home cocktail",
+    "starting with one bottle and learning its uses before adding another",
+    "pairing bourbon and sweet vermouth for a small home-bar plan",
+    "checking recipe ingredients before making a home-bar shopping list",
+    "using shaking versus stirring when learning recipes at home",
+    "preparing the tools and ingredients before mixing a home cocktail",
+    "making a focused recipe list instead of collecting unused bottles",
+    "understanding dilution when following a measured cocktail recipe",
 ]
 
 GENERIC_BROLL = [
@@ -140,17 +140,22 @@ def generate_short_plan() -> dict[str, Any]:
     prompt = f"""
 Create one YouTube Short about: {topic}
 
-The audience is adults interested in cocktails, bartending, restaurants, and hospitality.
+The audience is adults of legal drinking age learning cocktails at home.
+Connect the topic to a concrete home-bar problem: what to buy next, scattered recipes,
+or guessing pours. Teach one useful step, then explain how a focused bottle/recipe plan helps.
+The real offer is One Bottle at a Time: a $9, 51-page PDF with a six-bottle plan,
+15 recipes, exact measurements, methods, pro tips, and a Bar Build Map.
+Do not pitch or quote the offer in the generated body: a fixed, verified CTA is appended separately.
+Never imply six bottles are the only ingredients needed; the product is a digital guide.
 
 Creative requirements:
-- 65 to 95 spoken words, usually 25 to 40 seconds.
+- 55 to 80 spoken words in the educational body; reserve the final 30 words for the separately appended offer.
 - First sentence must be a pattern interrupt or curiosity hook, not a generic introduction.
 - Give the viewer a reason to keep watching within the first 3 seconds.
 - Use contrast, a common misconception, a sensory detail, or a practical bartender insight.
 - Keep sentences short enough to sound natural aloud.
-- Make the ending feel like a payoff, not a summary.
-- One optional final question is okay if it feels natural.
-- No fabricated numbers, history, health claims, or brand endorsements.
+- End the educational body with a practical payoff that leads naturally into the bottle-plan offer. No final question, links, or competing CTA.
+- No fabricated numbers, history, health claims, endorsements, customer results, reviews, savings promises, urgency, or guarantees. Do not encourage excessive drinking.
 - Title under 70 characters, specific but not clickbait.
 - Description: 1 to 2 short sentences plus #Shorts #Bartending #Hospitality.
 - Tags: 5 to 8 short tags, without # symbols.
@@ -169,7 +174,7 @@ Return JSON with exactly these keys: title, script, description, tags, hook_text
     if not title or not script:
         raise RuntimeError("Generated YouTube plan is missing title or script")
     word_count = len(script.split())
-    if word_count < 55 or word_count > 110:
+    if word_count < 55 or word_count > 85:
         raise RuntimeError(f"Generated script length is outside safe bounds: {word_count} words")
     if not hook_text:
         hook_text = title
@@ -368,6 +373,7 @@ ScaledBorderAndShadow: yes
 Format: Name,Fontname,Fontsize,PrimaryColour,SecondaryColour,OutlineColour,BackColour,Bold,Italic,Underline,StrikeOut,ScaleX,ScaleY,Spacing,Angle,BorderStyle,Outline,Shadow,Alignment,MarginL,MarginR,MarginV,Encoding
 Style: Caption,DejaVu Sans,92,&H00FFFFFF,&H0000D7FF,&H00000000,&H96000000,-1,0,0,0,100,100,0,0,3,5,0,2,70,70,245,1
 Style: Hook,DejaVu Sans,74,&H00FFFFFF,&H0000D7FF,&H00000000,&H90000000,-1,0,0,0,100,100,1,0,3,4,0,8,85,85,165,1
+Style: Offer,DejaVu Sans,48,&H00FFFFFF,&H0000D7FF,&H00000000,&H90000000,-1,0,0,0,100,100,0,0,3,4,0,8,85,85,180,1
 Style: Brand,DejaVu Sans,36,&H00FFFFFF,&H0000D7FF,&H00000000,&H70000000,-1,0,0,0,100,100,1,0,3,2,0,8,90,90,70,1
 
 [Events]
@@ -377,6 +383,14 @@ Format: Layer,Start,End,Style,Name,MarginL,MarginR,MarginV,Effect,Text
     hook = str(plan["hook_text"]).replace("{", "").replace("}", "").upper()
     lines.append(f"Dialogue: 2,0:00:00.00,{_ass_time(min(3.1, duration))},Hook,,0,0,0,,{{\\fad(120,180)\\fscx106\\fscy106}}{hook}\n")
     lines.append(f"Dialogue: 1,0:00:00.00,{_ass_time(duration)},Brand,,0,0,0,,BEHIND THE BAR\n")
+
+    if plan.get("offer_url"):
+        start = _ass_time(max(3.2, duration - 6.0))
+        end = _ass_time(duration)
+        lines.append(
+            f"Dialogue: 2,{start},{end},Offer,,0,0,0,,"
+            "15 RECIPES | SIX-BOTTLE PLAN\\N$9 PDF | CHANNEL DESCRIPTION\n"
+        )
 
     for chunk in chunks:
         fraction = len(chunk) / total_words
