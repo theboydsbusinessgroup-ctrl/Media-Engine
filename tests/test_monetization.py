@@ -16,6 +16,16 @@ class MonetizationTests(unittest.TestCase):
         self.assertIn('/l/yknubt', plan['description'])
         self.assertEqual(original['script'], 'Shake citrus cocktails.')
 
+    def test_posted_link_and_receipt_match_before_video_id_exists(self):
+        plan = attach_offer({'script':'Tip.', 'description':'Description.', 'model':'free'}, 'campaign', 'run-123')
+        receipt = publication_receipt(plan, 'actual_video_id', 'public')
+        self.assertIn(receipt['product_url'], plan['description'])
+        self.assertEqual(parse_qs(urlparse(receipt['product_url']).query)['utm_content'], ['run-123'])
+
+    def test_blank_attribution_is_rejected(self):
+        with self.assertRaises(ValueError):
+            attach_offer({'script':'Tip.', 'description':'Description.'}, 'campaign', '')
+
     def test_receipt_is_not_revenue_and_contains_no_credentials(self):
         receipt = publication_receipt({'campaign': 'c', 'model': 'openrouter/free'}, 'video123', 'public')
         self.assertFalse(receipt['revenue_verified'])
