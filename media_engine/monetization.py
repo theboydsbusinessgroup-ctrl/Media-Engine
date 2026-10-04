@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 PRODUCT_URL = 'https://boydsbusiness.gumroad.com/l/yknubt'
 SESSION_CODE = 'BARBUYER'
 SESSION_REQUEST_EMAIL = 'theboydsbusinessgroup@gmail.com'
-SPOKEN_CTA = 'Get my nine-dollar guide, then request a twenty-minute virtual session for nineteen dollars with code Bar Buyer. Email your receipt privately; details are in my channel description.'
+SPOKEN_CTA = 'Get my nine-dollar guide, then request a twenty-minute session for nineteen dollars with Bar Buyer. Propose a time; I approve every booking. Details in my channel description.'
 MAX_SPOKEN_WORDS = 120
 
 
@@ -15,7 +15,8 @@ def buyer_session_message() -> str:
         'Bring your bottle list and recipe questions. Email ' + SESSION_REQUEST_EMAIL + ' with subject ' + SESSION_CODE +
         ' and your ebook order ID, purchase email, timezone, and preferred times. Keep receipts private.\n'
         'One session per verified qualifying purchase; paid separately from the ebook. '
-        'Purchase eligibility and a time are confirmed before payment. Availability by arrangement; drinking is not required.'
+        'Propose any future date and time with your timezone. Eric must approve the exact date and time before payment or booking; '
+        'a request does not reserve a slot. Purchase verification is required. Drinking is not required.'
     )
 
 
