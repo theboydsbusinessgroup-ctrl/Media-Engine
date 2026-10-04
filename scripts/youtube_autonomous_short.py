@@ -451,7 +451,10 @@ def render_short(plan: dict[str, Any], out_dir: Path) -> tuple[Path, list[dict[s
 
 
 def main() -> None:
-    plan = attach_offer(generate_short_plan(), 'behindthebar-' + datetime.now(timezone.utc).date().isoformat())
+    # Use an identifier known before upload so the posted URL and receipt agree.
+    content = os.getenv('GITHUB_RUN_ID') or datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')
+    content += '-' + os.getenv('GITHUB_RUN_ATTEMPT', '1')
+    plan = attach_offer(generate_short_plan(), 'behindthebar-' + datetime.now(timezone.utc).date().isoformat(), content)
     privacy = os.getenv("YOUTUBE_PRIVACY_STATUS", "private").strip().lower()
     if privacy not in {"private", "unlisted", "public"}:
         raise RuntimeError("YOUTUBE_PRIVACY_STATUS must be private, unlisted, or public")
