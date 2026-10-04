@@ -31,7 +31,8 @@ class OfferIntegrationTests(unittest.TestCase):
         plan=attach_offer({'script':' '.join(['word']*60),'description':'Tip','hook_text':'Start with a plan','model':'free'},'c','run')
         with tempfile.TemporaryDirectory() as directory:
             captions=engine.write_dynamic_captions(plan,30,Path(directory)).read_text()
-            self.assertIn('$9 PDF | CHANNEL DESCRIPTION',captions)
+            self.assertIn('$9 PDF | $19 / 20 MIN BUYER SESSION',captions)
+            self.assertIn('EMAIL BARBUYER | CHANNEL DETAILS',captions)
             self.assertIn('Dialogue: 2,0:00:24.00,0:00:30.00,Offer',captions)
         with self.assertRaisesRegex(RuntimeError,'including the offer'):
             attach_offer({'script':' '.join(['word']*MAX_SPOKEN_WORDS),'description':'Tip'},'c','run')
