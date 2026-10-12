@@ -31,6 +31,7 @@ jobs:
       YOUTUBE_KOKORO_SPEED: '1.04'
       YOUTUBE_PLAN_MAX_ATTEMPTS: '3'
       MEDIA_RECEIPT_PATH: receipts/publication.json
+      MEDIA_OUTPUT_DIR: receipts/rendered-short
       KOKORO_MODEL_PATH: ${{ github.workspace }}/.cache/kokoro/kokoro-v1.0.int8.onnx
       KOKORO_VOICES_PATH: ${{ github.workspace }}/.cache/kokoro/voices-v1.0.bin
 
@@ -48,6 +49,9 @@ jobs:
           test -n "$YOUTUBE_CLIENT_ID" || { echo "YOUTUBE_CLIENT_ID is missing"; exit 1; }
           test -n "$YOUTUBE_CLIENT_SECRET" || { echo "YOUTUBE_CLIENT_SECRET is missing"; exit 1; }
           test -n "$YOUTUBE_REFRESH_TOKEN" || { echo "YOUTUBE_REFRESH_TOKEN is missing"; exit 1; }
+
+      - name: Verify token refresh before spending on generation or rendering
+        run: python scripts/check_youtube_auth.py --output receipts/youtube-auth.json
 
       - name: Install free media dependencies
         run: |
@@ -77,6 +81,7 @@ jobs:
 
       - name: Generate, render, and upload a public Behind The Bar Short
         run: |
+          set -o pipefail
           python scripts/youtube_autonomous_short_resilient.py | tee /tmp/youtube-autonomous-short-result.json
           python -m json.tool /tmp/youtube-autonomous-short-result.json
 
@@ -87,6 +92,18 @@ jobs:
           name: publication-receipt-${{ github.run_id }}
           path: receipts/publication.json
           retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Preserve authentication result and rendered Short
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: youtube-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            receipts/youtube-auth.json
+            receipts/rendered-short/short.mp4
+            receipts/rendered-short/upload.json
+          retention-days: 7
           if-no-files-found: ignore
 
       - name: Archive sanitized receipt in repository

@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, os, urllib.error, urllib.parse, urllib.request
+import json, os, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -10,12 +10,25 @@ class YouTubeUploadResult:
     video_id: str
     url: str
 
+class YouTubeOAuthError(RuntimeError):
+    """An authentication failure that requires account reauthorization."""
+
+    def __init__(self, code: str):
+        self.code = code
+        super().__init__(
+            f"Google token refresh failed: {code}. Reauthorize the YouTube account "
+            "and replace YOUTUBE_REFRESH_TOKEN. Check the OAuth app's Testing/Production "
+            "status before issuing the replacement token. No upload was attempted."
+        )
+
 class YouTubePublisher:
     """Minimal YouTube Data API v3 resumable uploader using a refresh token."""
     def __init__(self, client_id=None, client_secret=None, refresh_token=None):
         self.client_id=client_id or os.getenv("YOUTUBE_CLIENT_ID")
         self.client_secret=client_secret or os.getenv("YOUTUBE_CLIENT_SECRET")
         self.refresh_token=refresh_token or os.getenv("YOUTUBE_REFRESH_TOKEN")
+        self._token = None
+        self._token_deadline = 0.0
         if not all((self.client_id,self.client_secret,self.refresh_token)):
             raise RuntimeError("YouTube OAuth is not configured: YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, and YOUTUBE_REFRESH_TOKEN are required")
 
@@ -29,16 +42,31 @@ class YouTubePublisher:
         return RuntimeError(f"{context} failed with HTTP {exc.code}: {detail}")
 
     def _access_token(self):
+        if self._token and time.monotonic() < self._token_deadline:
+            return self._token
         body=urllib.parse.urlencode({"client_id":self.client_id,"client_secret":self.client_secret,"refresh_token":self.refresh_token,"grant_type":"refresh_token"}).encode()
         req=urllib.request.Request(TOKEN_URL,data=body,headers={"Content-Type":"application/x-www-form-urlencoded"})
         try:
             with urllib.request.urlopen(req,timeout=30) as r:
                 payload=json.load(r)
         except urllib.error.HTTPError as exc:
-            raise self._api_error(exc, "Google token refresh") from exc
+            try:
+                error = json.loads(exc.read(65536)).get("error")
+            except (ValueError, AttributeError):
+                error = None
+            if error in {"invalid_grant", "invalid_client", "unauthorized_client"}:
+                raise YouTubeOAuthError(error) from None
+            # OAuth response bodies can contain credentials. Never log them.
+            raise RuntimeError(f"Google token refresh failed with HTTP {exc.code}") from None
         token=payload.get("access_token")
         if not token: raise RuntimeError("Google token refresh returned no access_token")
+        self._token = token
+        self._token_deadline = time.monotonic() + max(0, int(payload.get("expires_in", 0)) - 60)
         return token
+
+    def preflight(self) -> None:
+        """Verify refresh credentials before generation, downloads or rendering."""
+        self._access_token()
 
     def upload(self, video_path, *, title, description="", tags=None, privacy_status="private", publish_at=None):
         if privacy_status not in {"private","unlisted","public"}: raise ValueError("invalid privacy_status")
