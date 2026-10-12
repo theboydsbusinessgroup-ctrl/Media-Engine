@@ -9,6 +9,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+from contextlib import nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -465,6 +466,8 @@ def render_short(plan: dict[str, Any], out_dir: Path) -> tuple[Path, list[dict[s
 
 
 def main() -> None:
+    publisher = YouTubePublisher()
+    publisher.preflight()
     # Use an identifier known before upload so the posted URL and receipt agree.
     content = os.getenv('GITHUB_RUN_ID') or datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%f')
     content += '-' + os.getenv('GITHUB_RUN_ATTEMPT', '1')
@@ -473,13 +476,22 @@ def main() -> None:
     if privacy not in {"private", "unlisted", "public"}:
         raise RuntimeError("YOUTUBE_PRIVACY_STATUS must be private, unlisted, or public")
 
-    with tempfile.TemporaryDirectory(prefix="behind-the-bar-") as tmp:
+    output_dir = os.getenv("MEDIA_OUTPUT_DIR")
+    workspace = nullcontext(output_dir) if output_dir else tempfile.TemporaryDirectory(prefix="behind-the-bar-")
+    with workspace as tmp:
         out_dir = Path(tmp)
+        out_dir.mkdir(parents=True, exist_ok=True)
         video, clips, duration = render_short(plan, out_dir)
         description = plan["description"]
         if "pexels" not in description.lower():
             description += "\n\nVisual footage sourced via Pexels."
-        result = YouTubePublisher().upload(
+        # Retain the rendered file and exact upload metadata when the provider fails.
+        (out_dir / "upload.json").write_text(json.dumps({
+            "title": plan["title"], "description": description,
+            "tags": plan["tags"], "privacy_status": privacy,
+            "publication_context": plan,
+        }, indent=2) + "\n")
+        result = publisher.upload(
             video,
             title=plan["title"],
             description=description,

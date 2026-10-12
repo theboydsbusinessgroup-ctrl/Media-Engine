@@ -1,7 +1,6 @@
 name: YouTube Private Upload Diagnostic Once
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 jobs:
   private-upload-diagnostic:
     runs-on: ubuntu-latest
@@ -20,6 +19,8 @@ jobs:
           test -n "$YOUTUBE_CLIENT_ID" || { echo "YOUTUBE_CLIENT_ID is missing"; exit 1; }
           test -n "$YOUTUBE_CLIENT_SECRET" || { echo "YOUTUBE_CLIENT_SECRET is missing"; exit 1; }
           test -n "$YOUTUBE_REFRESH_TOKEN" || { echo "YOUTUBE_REFRESH_TOKEN is missing"; exit 1; }
+      - name: Verify refresh credentials before generating video
+        run: python scripts/check_youtube_auth.py
       - name: Generate tiny private diagnostic video
         run: |
           if ! command -v ffmpeg >/dev/null 2>&1; then
