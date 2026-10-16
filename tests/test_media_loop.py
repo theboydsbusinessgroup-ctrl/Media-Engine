@@ -1,9 +1,11 @@
 import unittest
+from unittest.mock import Mock, patch
 from media_engine.analytics import AnalyticsStore
-from media_engine.models import ContentDraft
+from media_engine.models import ContentDraft, PublishResult
 from media_engine.orchestration import MediaLoop
 from media_engine.publishing import PinterestAdapter
 from media_engine.quality import review
+from media_engine.visual_assets import GeneratedAsset
 
 
 class MediaLoopTests(unittest.TestCase):
@@ -46,6 +48,45 @@ class MediaLoopTests(unittest.TestCase):
         draft = ContentDraft("c2","t2","Guaranteed income formula","This is a guaranteed income approach that promises risk-free profit.")
         qa = review(draft)
         self.assertFalse(qa.approved)
+
+    def test_live_publisher_is_not_called_without_verified_asset(self):
+        publisher = Mock(dry_run=False)
+        result = MediaLoop(publisher=publisher).run_once(self.candidates())
+        publisher.publish.assert_not_called()
+        self.assertFalse(result["publication"]["published"])
+        self.assertEqual(result["publication"]["reason"], "assets_not_publish_ready")
+
+    def test_live_publisher_receives_only_asset_verified_content(self):
+        publisher = Mock(dry_run=False)
+        publisher.publish.return_value = PublishResult(True, False, "fixture", provider_post_id="pin-1")
+        provider = Mock()
+        provider.generate.side_effect = lambda package, variant: GeneratedAsset(
+            package.content_id, "fixture", "https://example.org/image.png", "image/png",
+            variant.width, variant.height, "a" * 64, variant.platform, variant.placement)
+        result = MediaLoop(publisher=publisher, asset_provider=provider).run_once(self.candidates())
+        publisher.publish.assert_called_once()
+        self.assertTrue(result["assets"]["publish_ready"])
+        self.assertEqual(result["status"], "published")
+
+    def test_invalid_asset_cannot_reach_live_publisher(self):
+        publisher = Mock(dry_run=False)
+        provider = Mock()
+        provider.generate.side_effect = lambda package, variant: GeneratedAsset(
+            package.content_id, "fixture", "https://example.org/image.png", "image/png",
+            1, 1, "bad-checksum", variant.platform, variant.placement)
+        result = MediaLoop(publisher=publisher, asset_provider=provider).run_once(self.candidates())
+        publisher.publish.assert_not_called()
+        self.assertFalse(result["assets"]["publish_ready"])
+
+    def test_malformed_http_urls_fail_quality_review(self):
+        for url in ["httpx://example.com", "https:///missing-host", "http:"]:
+            with self.subTest(url=url):
+                draft = ContentDraft("c3", "t3", "Useful business checklist",
+                    "A sufficiently detailed body for a useful practical checklist.",
+                    destination_url=url, claims=["claim"], evidence_urls=[url])
+                qa = review(draft)
+                self.assertIn("invalid_evidence_url", qa.reasons)
+                self.assertIn("invalid_destination_url", qa.reasons)
 
     def test_metrics_generate_learning_signal(self):
         store = AnalyticsStore()
