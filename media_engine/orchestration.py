@@ -6,6 +6,7 @@ from .assets import package_assets
 from .content import generate_pinterest_draft, ContentGenerator
 from .discovery import normalize_candidates, discover_topics, DiscoveryProvider
 from .publishing import PinterestAdapter
+from .models import PublishResult
 from .quality import review
 from .scoring import opportunity_score
 from .visual_assets import DisabledVisualAssetProvider, VisualAssetProvider, verify_generated_asset
@@ -37,9 +38,18 @@ class MediaLoop:
         generated_asset = self.asset_provider.generate(asset_package, pinterest_variant) if qa.approved and asset_qa.approved else None
         media_asset_qa = verify_generated_asset(generated_asset, asset_package, pinterest_variant)
         asset_manifest = build_manifest(draft, qa, asset_package, asset_qa, generated_asset, media_asset_qa)
-        publication = self.publisher.publish(draft, qa)
+        dry_run = bool(getattr(self.publisher, "dry_run", False))
+        if not qa.approved or (not dry_run and not asset_manifest["publish_ready"]):
+            publication = PublishResult(
+                False, dry_run, f"pinterest:{draft.content_id}",
+                reason="qa_rejected" if not qa.approved else "assets_not_publish_ready",
+            )
+        else:
+            publication = self.publisher.publish(draft, qa)
         return {
-            "status":"publish_intent" if qa.approved else "qa_rejected",
+            "status": ("qa_rejected" if not qa.approved else
+                       "assets_not_publish_ready" if not dry_run and not asset_manifest["publish_ready"] else
+                       "published" if publication.published else "publish_intent"),
             "platform":"pinterest",
             "topic_id":winner.topic_id,
             "topic_title":winner.title,
