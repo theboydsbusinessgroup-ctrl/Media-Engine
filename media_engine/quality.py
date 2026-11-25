@@ -6,6 +6,14 @@ PROHIBITED_PHRASES = {"guaranteed income", "risk-free profit", "secret loophole"
 UNSUPPORTED_NUMERIC_PATTERNS = ("15 minute", "15-minute", "30 minute", "30-minute", "save hours", "double your", "increase by")
 
 
+def valid_http_url(url: str) -> bool:
+    try:
+        parsed = urlparse(url)
+        return parsed.scheme in {"http", "https"} and bool(parsed.hostname)
+    except ValueError:
+        return False
+
+
 def review(draft: ContentDraft) -> QAResult:
     reasons = []
     text = f"{draft.title} {draft.body}".lower()
@@ -14,8 +22,8 @@ def review(draft: ContentDraft) -> QAResult:
     if any(p in text for p in PROHIBITED_PHRASES): reasons.append("prohibited_claim_language")
     if any(p in text for p in UNSUPPORTED_NUMERIC_PATTERNS) and not draft.evidence_urls: reasons.append("unsupported_numeric_or_performance_claim")
     if draft.claims and not draft.evidence_urls: reasons.append("claims_lack_evidence")
-    if draft.claims and any(not urlparse(u).scheme.startswith("http") for u in draft.evidence_urls): reasons.append("invalid_evidence_url")
+    if any(not valid_http_url(u) for u in draft.evidence_urls): reasons.append("invalid_evidence_url")
     if len(draft.body) > 500: reasons.append("pinterest_body_too_long")
-    if draft.destination_url and not urlparse(draft.destination_url).scheme.startswith("http"): reasons.append("invalid_destination_url")
+    if draft.destination_url and not valid_http_url(draft.destination_url): reasons.append("invalid_destination_url")
     score = max(0.0, 1.0 - 0.20 * len(reasons))
     return QAResult(approved=score >= 0.85 and not reasons, score=round(score, 2), reasons=reasons)

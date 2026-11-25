@@ -63,4 +63,16 @@ class ProviderTests(unittest.TestCase):
         self.assertEqual(len(calls),1)
         self.assertEqual(a.idempotency_key,b.idempotency_key)
 
+    def test_corrected_board_category_can_retry_after_gate_rejection(self):
+        calls = []
+        transport = GatedPinterestTransport(lambda payload: calls.append(payload) or {"id":"123"})
+        draft = ContentDraft("c1", "t1", "Useful business checklist",
+            "A sufficiently detailed body for a useful practical business checklist.")
+        target = PinterestTarget("1", "Business", "business", "https://example.org/image.png", "Checklist")
+        rejected = transport.publish(draft, review(draft), content_category="wedding", target=target)
+        self.assertFalse(rejected.published)
+        retried = transport.publish(draft, review(draft), content_category="business", target=target)
+        self.assertTrue(retried.published)
+        self.assertEqual(len(calls), 1)
+
 if __name__ == "__main__": unittest.main()

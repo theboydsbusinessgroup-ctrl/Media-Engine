@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Callable, Any
 
 from ..models import ContentDraft, PublishResult, QAResult
+from ..quality import valid_http_url
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,7 @@ class GatedPinterestTransport:
             result = PublishResult(False, False, key, reason="qa_rejected")
         elif content_category != target.category:
             result = PublishResult(False, False, key, reason="board_category_mismatch")
-        elif not target.media_url.startswith("https://"):
+        elif not target.media_url.startswith("https://") or not valid_http_url(target.media_url):
             result = PublishResult(False, False, key, reason="public_https_media_required")
         else:
             response = self.create_pin({
@@ -50,5 +51,6 @@ class GatedPinterestTransport:
             if not pin_id:
                 raise ValueError("Pinterest transport did not return a Pin ID")
             result = PublishResult(True, False, key, provider_post_id=pin_id)
-        self._sent[key] = result
+        if result.published:
+            self._sent[key] = result
         return result
