@@ -53,3 +53,6 @@ JARVIS integration must remain telemetry/control-plane only unless an explicit f
 - Phase 5: analytics and monetization tracking
 - Phase 6: daily orchestration, retries, optimization, and JARVIS telemetry
 - Phase 7: production hardening and revenue validation
+
+## Reference video breakdowns
+Attach a saved TikTok, Reel or Short and say "break this down". You get the hook, a beat map, pacing and the CTA, plus a reusable structure, with no Higgsfield credits. See `docs/video-breakdowns.md`.
