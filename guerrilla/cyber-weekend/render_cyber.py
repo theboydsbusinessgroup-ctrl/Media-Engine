@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 GELASIO = os.path.join(HERE, "fonts", "Gelasio[wght].ttf")  # vendored, SIL OFL (fonts/OFL.txt)
 INTER = "/usr/share/fonts/opentype/inter/Inter-{}.otf"
+LN = ["lnum"]  # lining figures: Gelasio defaults to old-style digits
 
 THEMES = {
     "green":    {"bg": ((14, 44, 35), (8, 26, 21)), "ink": (244, 238, 227), "accent": (201, 164, 92), "muted": (190, 200, 190)},
@@ -45,7 +46,7 @@ def wrap(d, text, font, maxw):
     lines, line = [], ""
     for wd in text.split(" "):
         trial = (line + " " + wd).strip()
-        if d.textlength(trial, font=font) <= maxw or not line:
+        if d.textlength(trial, font=font, features=LN) <= maxw or not line:
             line = trial
         else:
             lines.append(line)
@@ -66,8 +67,8 @@ def layout(d, slide, s, w, M, draw=None, y0=0, t=None):
         nonlocal y
         for ln in wrap(d, text, font, maxw - indent):
             if draw:
-                x = M + indent + ((maxw - indent - d.textlength(ln, font=font)) / 2 if center else 0)
-                draw.text((x, y), ln, font=font, fill=fill)
+                x = M + indent + ((maxw - indent - d.textlength(ln, font=font, features=LN)) / 2 if center else 0)
+                draw.text((x, y), ln, font=font, fill=fill, features=LN)
             y += int(font.size * spacing)
         y += gap
     block(arrow(slide["headline"]), serif(int(96 * s)), t["ink"] if t else None, int(30 * s), 1.12)
@@ -84,11 +85,11 @@ def layout(d, slide, s, w, M, draw=None, y0=0, t=None):
     if "price" in slide:
         pf = sans(int(60 * s), "Bold")
         txt = arrow(slide["price"])
-        pw = d.textlength(txt, font=pf)
+        pw = d.textlength(txt, font=pf, features=LN)
         ph = int(120 * s)
         if draw:
             draw.rounded_rectangle((M, y, M + pw + int(80 * s), y + ph), radius=ph // 2, fill=t["accent"])
-            draw.text((M + int(40 * s), y + (ph - pf.size) // 2 - int(4 * s)), txt, font=pf, fill=(20, 20, 20))
+            draw.text((M + int(40 * s), y + (ph - pf.size) // 2 - int(4 * s)), txt, font=pf, fill=(20, 20, 20), features=LN)
         y += ph + int(40 * s)
     if "small" in slide:
         block(slide["small"], sans(int(36 * s), "SemiBold"), t["accent"] if t else None, 0, 1.3)
