@@ -62,7 +62,7 @@ mix /= np.max(np.abs(mix)) + 1e-9
 mix *= 0.5
 stereo = np.stack([mix, np.roll(mix, 220) * 0.96], axis=1)
 pcm = (stereo * 32767).astype(np.int16)
-out = os.path.join(os.path.dirname(__file__), "out", "music.wav")
+out = os.environ.get("MUSIC", os.path.join(os.path.dirname(__file__), "out", "music.wav"))
 os.makedirs(os.path.dirname(out), exist_ok=True)
 with wave.open(out, "wb") as w:
     w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR)
