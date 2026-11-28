@@ -1,0 +1,20 @@
+{
+  "cyber_a": {"theme": "green", "slides": [
+    {"headline": "CYBER WEEKEND", "sub": "40% off every guide and workbook", "small": "Through Monday night"},
+    {"headline": "One Bottle at a Time", "sub": "Build a home bar. Learn 15 cocktails.", "price": "$9  ->  $5.40"},
+    {"headline": "Holiday Cocktail Party Menu Kit", "sub": "3 printable menus. 12 recipes. Batch math.", "price": "$12  ->  $7.20"},
+    {"headline": "Code CYBER40", "sub": "boydsbusiness.gumroad.com", "small": "Ends Mon 11/30, 11:59 PM CT. 21+. Please drink responsibly."}
+  ]},
+  "cyber_b": {"theme": "burgundy", "slides": [
+    {"headline": "A $7.20 gift for the friend who always hosts"},
+    {"headline": "Holiday Cocktail Party Menu Kit", "sub": "3 printable bar menus and 12 bartender-tested recipes"},
+    {"headline": "Batch math and a shopping list for 20 guests", "sub": "Instant download"},
+    {"headline": "$12  ->  $7.20 with code CYBER40", "sub": "boydsbusiness.gumroad.com", "small": "Ends Monday night. 21+. Please drink responsibly."}
+  ]},
+  "cyber_c": {"theme": "midnight", "slides": [
+    {"headline": "Bartenders who work private events", "sub": "Cyber Monday is the last day"},
+    {"headline": "5 costs missing from most quotes", "list": ["Setup and breakdown hours", "Ice, cups and garnish", "Drive time", "Card fees", "Your minimum"]},
+    {"headline": "Mobile Bartending Profit + Booking OS", "sub": "Quote calculator. Liquor planner. Bookings pipeline. Profit log."},
+    {"headline": "$29  ->  $17.40 with code CYBER40", "sub": "boydsbusiness.gumroad.com", "small": "Ends tonight, 11:59 PM CT"}
+  ]}
+}
